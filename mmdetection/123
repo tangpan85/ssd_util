@@ -1,0 +1,38 @@
+# 新配置继承了基本配置，并做了必要的修改
+_base_ = r'D:\Python\mmd\projects\CO-DETR\configs\codino/co_dino_5scale_swin_l_lsj_16xb1_3x_coco.py'
+
+# 我们还需要更改 head 中的 num_classes 以匹配数据集中的类别数
+model = dict(
+    roi_head=dict(
+        bbox_head=dict(num_classes=1), mask_head=dict(num_classes=1)))
+
+# 修改数据集相关配置
+data_root = 'data/balloon/'
+metainfo = {
+    'classes': ('balloon', ),
+    'palette': [
+        (220, 20, 60),
+    ]
+}
+train_dataloader = dict(
+    batch_size=1,
+    dataset=dict(
+        data_root=data_root,
+        metainfo=metainfo,
+        ann_file='train2017/instances_train2017.json',
+        data_prefix=dict(img='train2017/')))
+val_dataloader = dict(
+    dataset=dict(
+        data_root=data_root,
+        metainfo=metainfo,
+        ann_file='val/instances_train2017.json',
+        data_prefix=dict(img='val/')))
+test_dataloader = val_dataloader
+
+# 修改评价指标相关配置
+val_evaluator = dict(ann_file=data_root + 'val/instances_train2017.json')
+test_evaluator = val_evaluator
+
+# 使用预训练的 Mask R-CNN 模型权重来做初始化，可以提高模型性能
+#load_from = 'https://download.openmmlab.com/mmdetection/v2.0/mask_rcnn/mask_rcnn_r50_caffe_fpn_mstrain-poly_3x_coco/mask_rcnn_r50_caffe_fpn_mstrain-poly_3x_coco_bbox_mAP-0.408__segm_mAP-0.37_20200504_163245-42aa3d00.pth'
+load_from = r'D:\Python\mmd\checkpoints\co_dino_5scale_lsj_swin_large_1x_coco-3af73af2.pth'
